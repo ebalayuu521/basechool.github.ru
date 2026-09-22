@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Школа Славика — Дневник</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    color: #2c3e50;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 {
+    color: #fff;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 20px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+  h2 { color: #4a3a8a; margin-top: 0; }
+  input, button {
+    padding: 10px 12px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    font-family: inherit;
+  }
+  input { width: 100%; }
+  input:focus { outline: 2px solid #667eea; border-color: #667eea; }
+  button {
+    background: #667eea;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+  }
+  button:hover { background: #5568d3; transform: translateY(-1px); }
+  button.danger { background: #e74c3c; }
+  button.danger:hover { background: #c0392b; }
+  button.success { background: #27ae60; }
+  button.success:hover { background: #219150; }
+  button.small { padding: 6px 12px; font-size: 13px; width: auto; }
+  .hidden { display: none !important; }
+
+  .grade {
+    display: inline-block;
+    background: #e0f0ff;
+    padding: 4px 10px;
+    margin: 3px;
+    border-radius: 6px;
+    font-weight: bold;
+    border: 1px solid #b3d9ff;
+    font-size: 13px;
+  }
+  .grade.bad { background: #ffe0e0; border-color: #ffb3b3; }
+  .grade .date { font-size: 10px; color: #666; display: block; }
+
+  .day-block {
+    border-left: 4px solid #667eea;
+    padding: 10px 0 10px 12px;
+    margin: 12px 0;
+  }
+  .day-title { font-weight: bold; color: #4a3a8a; margin-bottom: 6px; }
+
+  .subject-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .subject-row b { min-width: 110px; }
+  .subject-row input { width: 70px !important; margin: 0; padding: 6px; }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .topbar span { font-weight: bold; color: #4a3a8a; }
+
+  .code-badge {
+    display: inline-block;
+    background: #ffd93d;
+    color: #333;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: 3px;
+    font-size: 18px;
+  }
+
+  .admin-badge {
+    background: #ffd93d;
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-left: 6px;
+  }
+
+  .link-box {
+    background: #f0f4ff;
+    border: 1px dashed #667eea;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    word-break: break-all;
+    color: #333;
+  }
+  .link-box a { color: #4a3a8a; }
+
+  .invite-banner {
+    background: #d4edda;
+    border-left: 4px solid #27ae60;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 10px 0;
+  }
+  .error-banner {
+    background: #f8d7da;
+    border-left: 4px solid #e74c3c;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 10px 0;
+    color: #721c24;
+  }
+
+  .notify {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    border-left: 6px solid #e74c3c;
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    max-width: 340px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    font-size: 14px;
+  }
+  .notify.ok { border-left-color: #27ae60; }
+  .notify.info { border-left-color: #667eea; }
+  .notify .close {
+    float: right; cursor: pointer; color: #999;
+    font-weight: bold; margin-left: 10px;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+  }
+
+  .missing-list {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 14px;
+  }
+  .missing-list b { color: #856404; }
+  .missing-list ul { margin: 6px 0 0 18px; padding: 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🏫 Школа Славика — Дневник</h1>
+
+  <!-- ЭКРАН ВХОДА -->
+  <div id="authScreen">
+    <div id="pendingInviteBox" class="hidden">
+      <div class="invite-banner">
+        🎫 Тебя пригласили в группу <b id="pendingGroupName"></b>.<br>
+        Войди или зарегистрируйся — и сразу попадёшь в неё.
+      </div>
+    </div>
+    <div id="inviteErrorBox" class="hidden">
+      <div class="error-banner">
+        ❌ Группа с таким кодом не найдена.<br>
+        Проверь ссылку — возможно, она устарела.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔑 Вход</h2>
+      <input id="loginLogin" placeholder="Логин">
+      <input id="loginPass" type="password" placeholder="Пароль">
+      <button onclick="login()" style="width:100%">Войти</button>
+    </div>
+
+    <div class="card">
+      <h2>📝 Регистрация</h2>
+      <input id="regLogin" placeholder="Логин">
+      <input id="regPass" type="password" placeholder="Пароль">
+      <button onclick="register()" style="width:100%">Зарегистрироваться</button>
+    </div>
+  </div>
+
+  <!-- ГЛАВНЫЙ ЭКРАН -->
+  <div id="mainScreen" class="hidden">
+    <div class="topbar">
+      <span>👤 <b id="currentUser"></b> <small id="roleLabel"></small></span>
+      <button class="danger small" onclick="logout()">Выйти</button>
+    </div>
+
+    <div id="adminPanel" class="card hidden">
+      <h2>👑 Админ-панель</h2>
+      <input id="groupName" placeholder="Название группы (например, 7А)">
+      <button onclick="createGroup()" style="width:100%">➕ Создать группу</button>
+      <p style="font-size:13px;color:#666;margin-top:10px">
+        💡 Код группы и ссылка-приглашение сгенерируются автоматически.
+      </p>
+    </div>
+
+    <div id="groupsList"></div>
+  </div>
+</div>
+
+<script>
+/* ========== КОНСТАНТЫ ========== */
+const ADMIN_LOGIN = 'Славик';
+const ADMIN_PASS  = '111111';
+const SUBJECTS = ['Математика', 'Русский', 'История', 'Физика', 'Информатика', 'Английский'];
+
+/* ========== ХРАНИЛИЩЕ ========== */
+let users  = JSON.parse(localStorage.getItem('school_users')  || '[]');
+let groups = JSON.parse(localStorage.getItem('school_groups') || '[]');
+let currentUser = localStorage.getItem('school_current') || '';
+
+/* ========== ДАТЫ ========== */
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+         String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+function formatDateRu(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return d + '.' + m + '.' + y;
+}
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' +
+         String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+
+/* ========== ГАРАНТИРУЕМ АДМИНА ========== */
+function ensureAdmin() {
+  let slavik = users.find(u => u.login === ADMIN_LOGIN);
+  if (!slavik) {
+    users.push({ login: ADMIN_LOGIN, pass: ADMIN_PASS, role: 'admin' });
+  } else {
+    slavik.pass = ADMIN_PASS;
+    slavik.role = 'admin';
+  }
+  localStorage.setItem('school_users', JSON.stringify(users));
+}
+
+function save() {
+  localStorage.setItem('school_users',   JSON.stringify(users));
+  localStorage.setItem('school_groups',  JSON.stringify(groups));
+  localStorage.setItem('school_current', currentUser);
+}
+
+/* ========== ГЕНЕРАТОР КОДА ========== */
+function generateCode() {
+  const digits  = '0123456789';
+  const letters = 'абвгдежзиклмнопрстуфхцчшщэюя';
+  const rndD = () => digits[Math.floor(Math.random() * digits.length)];
+  const rndL = () => letters[Math.floor(Math.random() * letters.length)];
+  let code, attempts = 0;
+  do {
+    code = rndD() + rndD() + rndL() + rndL() + rndD() + rndD();
+    attempts++;
+    if (attempts > 100) break;
+  } while (groups.find(g => g.code === code));
+  return code;
+}
+
+/* ========== УВЕДОМЛЕНИЯ ========== */
+function notify(text, type) {
+  const div = document.createElement('div');
+  div.className = 'notify ' + (type || '');
+  div.innerHTML = '<span class="close" onclick="this.parentElement.remove()">✕</span>' + text;
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 8000);
+}
+
+/* ========== ВХОД ТОЛЬКО ПО ССЫЛКЕ ==========
+   Если в адресе есть ?join=КОД и группа с таким кодом есть в этом браузере —
+   показываем приглашение. Если группы нет — показываем ошибку. */
+let pendingCode = null;
+
+function checkUrlForInvite() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('join');
+  if (!code) return;
+
+  const group = groups.find(g => g.code === code);
+
+  if (!group) {
+    // Группы нет в этом браузере — показываем ошибку
+    const errBox = document.getElementById('inviteErrorBox');
+    if (errBox) errBox.classList.remove('hidden');
+    return;
+  }
+
+  pendingCode = code;
+  const box = document.getElementById('pendingInviteBox');
+  const name = document.getElementById('pendingGroupName');
+  if (box && name) {
+    name.textContent = '«' + group.name + '»';
+    box.classList.remove('hidden');
+  }
+  if (currentUser) tryJoinByCode(code, true);
+}
+
+/* ========== АВТОРИЗАЦИЯ ========== */
+function register() {
+  const login = document.getElementById('regLogin').value.trim();
+  const pass  = document.getElementById('regPass').value.trim();
+  if (!login || !pass) return alert('Заполни все поля');
+  if (login === ADMIN_LOGIN) return alert('Этот логин занят');
+  if (users.find(u => u.login === login)) return alert('Такой логин уже есть');
+  users.push({ login, pass, role: 'student' });
+  save();
+  alert('✅ Готово! Теперь войди.');
+}
+
+function login() {
+  ensureAdmin();
+
+  const login = document.getElementById('loginLogin').value.trim();
+  const pass  = document.getElementById('loginPass').value.trim();
+
+  if (login === ADMIN_LOGIN) {
+    if (pass !== ADMIN_PASS) return alert('❌ Неверный логин или пароль');
+    currentUser = ADMIN_LOGIN;
+    save();
+    afterLogin();
+    return render();
+  }
+
+  const user = users.find(u => u.login === login && u.pass === pass);
+  if (!user) return alert('❌ Неверный логин или пароль');
+  currentUser = login;
+  save();
+  afterLogin();
+  render();
+}
+
+function afterLogin() {
+  if (pendingCode) {
+    tryJoinByCode(pendingCode, false);
+    pendingCode = null;
+  }
+}
+
+function logout() {
+  currentUser = '';
+  save();
+  render();
+}
+
+/* ========== СОЗДАНИЕ ГРУППЫ ========== */
+function createGroup() {
+  if (currentUser !== ADMIN_LOGIN) return alert('Только админ может создавать группы');
+  const name = document.getElementById('groupName').value.trim();
+  if (!name) return alert('Введи название');
+
+  const code = generateCode();
+  groups.push({
+    name,
+    code,
+    owner: ADMIN_LOGIN,
+    members: [ADMIN_LOGIN],
+    grades: { [ADMIN_LOGIN]: {} },
+    createdAt: new Date().toISOString()
+  });
+  save();
+  alert('✅ Группа «' + name + '» создана!\n\nКод: ' + code +
+        '\n\nОтправь друзьям ссылку-приглашение.');
+  render();
+}
+
+/* ========== ПОДКЛЮЧЕНИЕ (только из ссылки) ========== */
+function tryJoinByCode(code, silent) {
+  const group = groups.find(g => g.code === code);
+  if (!group) {
+    if (!silent) notify('❌ Группа не найдена', '');
+    return false;
+  }
+  if (!group.members.includes(currentUser)) {
+    group.members.push(currentUser);
+    group.grades[currentUser] = {};
+    save();
+    notify('✅ Ты вошёл в группу «' + group.name + '»', 'ok');
+  } else {
+    if (!silent) notify('Ты уже в этой группе', 'info');
+  }
+  return true;
+}
+
+/* ========== ОЦЕНКИ ========== */
+function addGrade(gi, student, subject, value) {
+  if (student === currentUser) {
+    notify('❌ Нельзя ставить оценку самому себе', '');
+    return;
+  }
+  value = String(value).trim();
+  if (!value) { notify('Введи оценку (1–5)', ''); return; }
+  if (!/^[1-5]$/.test(value)) { notify('Оценка должна быть от 1 до 5', ''); return; }
+
+  const g = groups[gi];
+  if (!g.grades[student]) g.grades[student] = {};
+  if (!g.grades[student][subject]) g.grades[student][subject] = {};
+
+  const date = todayStr();
+  if (g.grades[student][subject][date]) {
+    if (!confirm('За сегодня уже есть ' + g.grades[student][subject][date] +
+                 '. Заменить на ' + value + '?')) return;
+  }
+  g.grades[student][subject][date] = value;
+  save();
+  notify('✅ ' + subject + ' — ' + student + ': ' + value + ' (' + formatDateRu(date) + ')', 'ok');
+  render();
+}
+
+function deleteGrade(gi, student, subject, date) {
+  if (student === currentUser) { notify('❌ Нельзя удалять свои оценки', ''); return; }
+  if (!confirm('Удалить оценку за ' + formatDateRu(date) + '?')) return;
+  const g = groups[gi];
+  if (g.grades[student] && g.grades[student][subject]) {
+    delete g.grades[student][subject][date];
+    save();
+    render();
+  }
+}
+
+function findMissingGrades(group, forDate) {
+  const missing = [];
+  group.members.forEach(student => {
+    SUBJECTS.forEach(subj => {
+      const has = group.grades[student] &&
+                  group.grades[student][subj] &&
+                  group.grades[student][subj][forDate];
+      if (!has) missing.push({ student, subject: subj });
+    });
+  });
+  return missing;
+}
+
+/* ========== КОПИРОВАНИЕ ========== */
+function copyText(text, okMsg) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(
+      () => notify('✅ ' + (okMsg || 'Скопировано!'), 'ok'),
+      () => prompt('Скопируй вручную:', text)
+    );
+  } else prompt('Скопируй вручную:', text);
+}
+function copyInviteLink(code) {
+  const base = window.location.origin + window.location.pathname;
+  const url = base + '?join=' + encodeURIComponent(code);
+  copyText(url, 'Ссылка-приглашение скопирована!');
+}
+
+/* ========== ОТРИСОВКА ========== */
+function render() {
+  const auth = document.getElementById('authScreen');
+  const main = document.getElementById('mainScreen');
+  const adminPanel = document.getElementById('adminPanel');
+
+  if (!currentUser) {
+    auth.classList.remove('hidden');
+    main.classList.add('hidden');
+    return;
+  }
+  auth.classList.add('hidden');
+  main.classList.remove('hidden');
+
+  const me = users.find(u => u.login === currentUser);
+  document.getElementById('currentUser').textContent = currentUser;
+  document.getElementById('roleLabel').innerHTML =
+    me && me.role === 'admin' ? '<span class="admin-badge">АДМИН</span>' : '';
+  adminPanel.classList.toggle('hidden', !(me && me.role === 'admin'));
+
+  const list = document.getElementById('groupsList');
+  list.innerHTML = '';
+  let hasAny = false;
+  const today = todayStr();
+  const yesterday = yesterdayStr();
+
+  groups.forEach((g, gi) => {
+    if (!g.members.includes(currentUser)) return;
+    hasAny = true;
+
+    const div = document.createElement('div');
+    div.className = 'card';
+
+    /* Заголовок группы */
+    const header = document.createElement('div');
+    header.innerHTML = `<h2>📚 ${g.name}</h2>
+      <p>Код группы: <span class="code-badge">${g.code}</span></p>`;
+
+    const linkBtn = document.createElement('button');
+    linkBtn.className = 'success small';
+    linkBtn.textContent = '🔗 Скопировать ссылку-приглашение';
+    linkBtn.onclick = () => copyInviteLink(g.code);
+    header.appendChild(linkBtn);
+
+    const linkPreview = document.createElement('div');
+    linkPreview.className = 'link-box';
+    const base = window.location.origin + window.location.pathname;
+    const fullUrl = base + '?join=' + encodeURIComponent(g.code);
+    linkPreview.innerHTML = '🔗 Ссылка-приглашение:<br><a href="' + fullUrl + '">' + fullUrl + '</a>';
+    header.appendChild(linkPreview);
+    div.appendChild(header);
+
+    /* Пропущенные оценки */
+    const missingToday = findMissingGrades(g, today);
+    const missingYesterday = findMissingGrades(g, yesterday);
+
+    if (missingToday.length > 0) {
+      const block = document.createElement('div');
+      block.className = 'missing-list';
+      block.innerHTML = `<b>🔔 Сегодня (${formatDateRu(today)}) ещё нет оценок:</b>
+        <ul>${missingToday.map(m => `<li><b>${m.student}</b> — ${m.subject}</li>`).join('')}</ul>`;
+      div.appendChild(block);
+    } else {
+      const block = document.createElement('div');
+      block.className = 'missing-list';
+      block.style.background = '#d4edda';
+      block.style.borderLeftColor = '#27ae60';
+      block.innerHTML = `<b>✅ Сегодня (${formatDateRu(today)}) все оценки выставлены!</b>`;
+      div.appendChild(block);
+    }
+
+    if (missingYesterday.length > 0) {
+      const block = document.createElement('div');
+      block.className = 'missing-list';
+      block.style.background = '#f8d7da';
+      block.style.borderLeftColor = '#e74c3c';
+      block.innerHTML = `<b>⚠️ Вчера (${formatDateRu(yesterday)}) не выставлено:</b>
+        <ul>${missingYesterday.slice(0, 6).map(m => `<li><b>${m.student}</b> — ${m.subject}</li>`).join('')}</ul>`;
+      div.appendChild(block);
+    }
+
+    /* Ученики и оценки */
+    g.members.forEach(student => {
+      const sBlock = document.createElement('div');
+      sBlock.className = 'day-block';
+      sBlock.innerHTML = `<div class="day-title">🎓 ${student}
+        ${student === currentUser ? '<small style="color:#888">(это ты)</small>' : ''}
+      </div>`;
+
+      SUBJECTS.forEach(subj => {
+        const dayGrades = (g.grades[student] && g.grades[student][subj]) || {};
+        const dates = Object.keys(dayGrades).sort().reverse();
+
+        const row = document.createElement('div');
+        row.className = 'subject-row';
+
+        const label = document.createElement('b');
+        label.textContent = subj + ':';
+        row.appendChild(label);
+
+        const gradesSpan = document.createElement('span');
+        if (dates.length === 0) {
+          gradesSpan.innerHTML = '<i style="color:#999;font-size:13px">нет оценок</i>';
+        } else {
+          dates.slice(0, 8).forEach(date => {
+            const val = dayGrades[date];
+            const chip = document.createElement('span');
+            chip.className = 'grade' + (parseInt(val) <= 3 ? ' bad' : '');
+            chip.innerHTML = `${val}<span class="date">${formatDateRu(date)}</span>`;
+            if (student !== currentUser) {
+              chip.style.cursor = 'pointer';
+              chip.title = 'Нажми, чтобы удалить';
+              chip.onclick = () => deleteGrade(gi, student, subj, date);
+            } else {
+              chip.style.opacity = '0.7';
+              chip.title = 'Нельзя удалять свои оценки';
+            }
+            gradesSpan.appendChild(chip);
+          });
+        }
+        row.appendChild(gradesSpan);
+
+        if (student !== currentUser) {
+          const inp = document.createElement('input');
+          inp.placeholder = '5'; inp.type = 'number'; inp.min = '1'; inp.max = '5';
+          row.appendChild(inp);
+          const btn = document.createElement('button');
+          btn.className = 'small';
+          btn.textContent = 'Поставить за ' + formatDateRu(today);
+          btn.onclick = () => addGrade(gi, student, subj, inp.value);
+          row.appendChild(btn);
+          if (dayGrades[today]) {
+            const done = document.createElement('span');
+            done.style.cssText = 'color:#27ae60;font-weight:bold;font-size:13px';
+            done.textContent = '✅ уже стоит';
+            row.appendChild(done);
+          }
+        } else {
+          const info = document.createElement('span');
+          info.style.cssText = 'color:#888;font-size:12px;font-style:italic';
+          info.textContent = 'себе ставить нельзя';
+          row.appendChild(info);
+        }
+        sBlock.appendChild(row);
+      });
+
+      div.appendChild(sBlock);
+    });
+
+    list.appendChild(div);
+  });
+
+  if (!hasAny) {
+    list.innerHTML = '<div class="card" style="text-align:center;color:#888">' +
+      'У тебя пока нет групп.<br>' +
+      (currentUser === ADMIN_LOGIN
+        ? 'Создай группу — ссылка-приглашение появится автоматически.'
+        : 'Открой ссылку-приглашение, которую прислал админ.') +
+      '</div>';
+  }
+}
+
+/* ========== СТАРТ ========== */
+ensureAdmin();
+checkUrlForInvite();
+render();
+</script>
+</body>
+</html>
